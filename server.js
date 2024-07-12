@@ -23,8 +23,10 @@ app.get('/message', (req, res) => {
 });
 
 app.post('/sendmsg', (req, res) => {
+  console.log('request sent')
   const user = req.query.user;
   const messageContent = req.query.message;
+  console.log(req.query)
 
   if (!user || !messageContent) {
     return res.status(400).send('Missing user or message parameter');
