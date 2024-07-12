@@ -1,18 +1,19 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const Discord = require('discord.js');
+const { Client, Intents } = require('discord.js');
 
 const app = express();
-const client = new Discord.Client();
+const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
 const PORT = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
 
 let latestMessage = '';
 
-client.on('message', message => {
+client.on('messageCreate', message => {
   if (message.channel.id === '1114552169002188895') {
-    latestMessage = `[DISCORD] ${message.author.username}: ${message.content}`;
+    const displayName = message.member ? message.member.displayName : message.author.username;
+    latestMessage = `[DISCORD] ${displayName}: ${message.content}`;
   }
 });
 
