@@ -12,7 +12,7 @@ app.use(bodyParser.json());
 let latestMessage = '';
 
 client.on('messageCreate', message => {
-  if (message.channel.id === DISCORD_CHANNEL_ID) {
+  if (message.channel.id === DISCORD_CHANNEL_ID && !message.author.bot) {
     const displayName = message.member ? message.member.displayName : message.author.username;
     latestMessage = `[DISCORD] ${displayName}: ${message.content}`;
   }
@@ -22,17 +22,15 @@ app.get('/message', (req, res) => {
   res.json({ message: latestMessage });
 });
 
-app.post('/sendmsg', (req, res) => {
-  console.log('request sent')
+app.get('/sendmsg', (req, res) => {
   const user = req.query.user;
   const messageContent = req.query.message;
-  console.log(req.query)
 
   if (!user || !messageContent) {
     return res.status(400).send('Missing user or message parameter');
   }
 
-  const formattedMessage = `[POLYTORIA] ${user}: ${messageContent}`;
+  const formattedMessage = `${user}: ${messageContent}`;
   
   const channel = client.channels.cache.get(DISCORD_CHANNEL_ID);
   if (channel) {
