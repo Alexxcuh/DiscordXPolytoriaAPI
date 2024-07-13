@@ -95,7 +95,8 @@ app.get('/sendNotice', (req, res) => {
   const user = req.query.user;
   const after = req.query.after;
   const players = req.query.players;
-  print(players)
+  console.log(players)
+  console.log(after)
   if (!after || !user || !players) {
     return res.status(400).send('Missing user or message parameter');
   }
@@ -106,10 +107,18 @@ app.get('/sendNotice', (req, res) => {
     formattedMessage = `**${user}** Has left the game! 😢 Bye!`;
   }
   PlayersOnline = players
-  client.user.setPresence({
-    activities: [{ name: `${PlayersOnline} Players Online!` }],
-    status: 'online'
-  });
+  if (PlayersOnline == 1) {
+    client.user.setPresence({
+      activities: [{ name: `${PlayersOnline} Player Online!`, type: 'WATCHING' }],
+      status: 'online'
+    });
+  } else {
+    client.user.setPresence({
+      activities: [{ name: `${PlayersOnline} Players Online!`, type: 'WATCHING' }],
+      status: 'online'
+    });
+  }
+
 
   const channel = client.channels.cache.get(DISCORD_CHANNEL_ID);
   if (channel) {
@@ -130,7 +139,6 @@ app.get('/sendNotice', (req, res) => {
 app.get('/sendmsg', (req, res) => {
   const user = req.query.user;
   const messageContent = req.query.message;
-  console.log(req.query)
   if (!user || !messageContent) {
     return res.status(400).send('Missing user or message parameter');
   }
