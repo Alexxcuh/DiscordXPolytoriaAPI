@@ -91,29 +91,29 @@ app.get('/message', (req, res) => {
   res.json({ message: latestMessage });
 });
 
-app.get('/sendnotice', (req, res) => {
+app.get('/sendNotice', (req, res) => {
   const user = req.query.user;
-  const after = req.query.message;
+  const after = req.query.after;
   if (!after || !user) {
     return res.status(400).send('Missing user or message parameter');
   }
-  let formattedMessage = `nah`
-  if (after == "join") {
+
+  let formattedMessage = 'nah';
+  if (after === 'join') {
     formattedMessage = `**${user}** Has joined the game! 👋 Hello!`;
-    PlayersOnline += 1
-  } else if (after == "leave") {
-    formattedMessage = `**${user}** Has left the game! 😢 Bye!`
-    PlayersOnline -= 1
+    PlayersOnline += 1;
+  } else if (after === 'leave') {
+    formattedMessage = `**${user}** Has left the game! 😢 Bye!`;
+    PlayersOnline -= 1;
   }
 
-  // Change the bot status to show the number of players online
-  Client.user.setPresence({
+  client.user.setPresence({
     activities: [{ name: `${PlayersOnline} Players Online!` }],
     status: 'online'
   });
 
   const channel = client.channels.cache.get(DISCORD_CHANNEL_ID);
-  if (channel && formattedMessage != "nah") {
+  if (channel && formattedMessage !== 'nah') {
     channel.send(formattedMessage)
       .then(() => {
         res.status(200).send('Message sent');
