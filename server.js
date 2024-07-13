@@ -5,7 +5,7 @@ const { Client, Intents } = require('discord.js');
 const app = express();
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
 const PORT = process.env.PORT || 3000;
-const DISCORD_CHANNEL_ID = '1114552169002188895';
+const DISCORD_CHANNEL_ID = '1261730538906062848';
 
 app.use(bodyParser.json());
 
