@@ -94,21 +94,17 @@ app.get('/message', (req, res) => {
 app.get('/sendNotice', (req, res) => {
   const user = req.query.user;
   const after = req.query.after;
-  if (!after || !user) {
+  const players = req.query.players;
+  if (!after || !user || !players) {
     return res.status(400).send('Missing user or message parameter');
   }
-  console.log(after)
-  console.log(after == "join")
-  console.log(after == "leave")
   let formattedMessage = 'nah';
   if (after == ' Has joined the game! 👋 Hello!' || after == "join") {
     formattedMessage = `**${user}** Has joined the game! 👋 Hello!`;
-    PlayersOnline += 1;
   } else if (after == ' Has left the game! 😢 Bye!' || after == "leave") {
     formattedMessage = `**${user}** Has left the game! 😢 Bye!`;
-    PlayersOnline -= 1;
   }
-
+  playersOnline = 
   client.user.setPresence({
     activities: [{ name: `${PlayersOnline} Players Online!` }],
     status: 'online'
