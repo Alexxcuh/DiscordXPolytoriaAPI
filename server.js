@@ -97,12 +97,14 @@ app.get('/sendNotice', (req, res) => {
   if (!after || !user) {
     return res.status(400).send('Missing user or message parameter');
   }
-
+  console.log(after)
+  console.log(after == "join")
+  console.log(after == "leave")
   let formattedMessage = 'nah';
-  if (after === 'join') {
+  if (after == 'join') {
     formattedMessage = `**${user}** Has joined the game! 👋 Hello!`;
     PlayersOnline += 1;
-  } else if (after === 'leave') {
+  } else if (after == 'leave') {
     formattedMessage = `**${user}** Has left the game! 😢 Bye!`;
     PlayersOnline -= 1;
   }
@@ -113,7 +115,7 @@ app.get('/sendNotice', (req, res) => {
   });
 
   const channel = client.channels.cache.get(DISCORD_CHANNEL_ID);
-  if (channel && formattedMessage !== 'nah') {
+  if (channel) {
     channel.send(formattedMessage)
       .then(() => {
         res.status(200).send('Message sent');
