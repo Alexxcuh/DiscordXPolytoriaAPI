@@ -1,7 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const { Client, Intents } = require('discord.js');
-const stringSimilarity = require('string-similarity');
 const app = express();
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
 const PORT = process.env.PORT || 3000;
@@ -12,6 +11,43 @@ app.use(bodyParser.json());
 let latestMessage = '';
 
 let PlayersOnline = 0;
+
+const levenshtein = (a, b) => {
+  const matrix = [];
+
+  // Increment along the first column of each row
+  for (let i = 0; i <= b.length; i++) {
+    matrix[i] = [i];
+  }
+
+  // Increment each column in the first row
+  for (let j = 0; j <= a.length; j++) {
+    matrix[0][j] = j;
+  }
+
+  // Fill in the rest of the matrix
+  for (let i = 1; i <= b.length; i++) {
+    for (let j = 1; j <= a.length; j++) {
+      if (b.charAt(i - 1) === a.charAt(j - 1)) {
+        matrix[i][j] = matrix[i - 1][j - 1];
+      } else {
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j - 1] + 1, // substitution
+          Math.min(matrix[i][j - 1] + 1, // insertion
+          matrix[i - 1][j] + 1) // deletion
+        );
+      }
+    }
+  }
+
+  return matrix[b.length][a.length];
+};
+
+// Function to calculate similarity ratio
+const similarity = (a, b) => {
+  const distance = levenshtein(a, b);
+  return (1 - distance / Math.max(a.length, b.length));
+};
 
 client.on('messageCreate', message => {
   if (message.channel.id === DISCORD_CHANNEL_ID && !message.author.bot) {
@@ -30,8 +66,8 @@ client.on('messageCreate', message => {
     function censorWord(word) {
       for (const pattern of censorList) {
         const regex = new RegExp(pattern, 'gi');
-        const similarity = stringSimilarity.compareTwoStrings(word, pattern);
-        if (regex.test(word) || similarity >= 0.75) {
+        const similarityRatio = similarity(word, pattern);
+        if (regex.test(word) || similarityRatio >= 0.75) {
           return '*'.repeat(word.length);
         }
       }
@@ -46,6 +82,7 @@ client.on('messageCreate', message => {
     latestMessage = `[DISCORD] ${displayName}: ${censoredContent}`;
   }
 });
+
 
 
 
@@ -70,7 +107,7 @@ app.get('/sendnotice', (req, res) => {
   }
 
   // Change the bot status to show the number of players online
-  client.user.setPresence({
+  Client.user.setPresence({
     activities: [{ name: `${PlayersOnline} Players Online!` }],
     status: 'online'
   });

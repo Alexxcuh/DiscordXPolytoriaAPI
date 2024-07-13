@@ -19,8 +19,7 @@
     "discord-api-types": "^0.24.1",
     "web-streams-polyfill": "^2.0.0",
     "node-fetch": "^2.7.0",
-    "undici": "^4.13.1",
-    "string-similarity": "^4.0.4"
+    "undici": "^4.13.1"
   },
   "engines": {
     "node": "16.x"
