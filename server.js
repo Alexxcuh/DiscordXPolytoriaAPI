@@ -95,6 +95,7 @@ app.get('/sendNotice', (req, res) => {
   const user = req.query.user;
   const after = req.query.after;
   const players = req.query.players;
+  print(players)
   if (!after || !user || !players) {
     return res.status(400).send('Missing user or message parameter');
   }
@@ -111,7 +112,7 @@ app.get('/sendNotice', (req, res) => {
   });
 
   const channel = client.channels.cache.get(DISCORD_CHANNEL_ID);
-  if (channel && formattedMessage != "nah") {
+  if (channel) {
     channel.send(formattedMessage)
       .then(() => {
         res.status(200).send('Message sent');
