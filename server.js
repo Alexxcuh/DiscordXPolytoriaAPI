@@ -66,7 +66,7 @@ app.get('/sendmsg', (req, res) => {
     return res.status(400).send('Missing user or message parameter');
   }
 
-  const formattedMessage = `${user}: ${messageContent}`;
+  const formattedMessage = `**${user}**: ${messageContent}`;
   
   const channel = client.channels.cache.get(DISCORD_CHANNEL_ID);
   if (channel) {
