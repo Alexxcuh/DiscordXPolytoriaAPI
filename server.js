@@ -104,7 +104,7 @@ app.get('/sendNotice', (req, res) => {
   } else if (after == ' Has left the game! 😢 Bye!' || after == "leave") {
     formattedMessage = `**${user}** Has left the game! 😢 Bye!`;
   }
-  playersOnline = 
+  PlayersOnline = players
   client.user.setPresence({
     activities: [{ name: `${PlayersOnline} Players Online!` }],
     status: 'online'
