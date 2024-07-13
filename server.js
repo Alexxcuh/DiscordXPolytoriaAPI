@@ -11,6 +11,8 @@ app.use(bodyParser.json());
 
 let latestMessage = '';
 
+let PlayersOnline = 0;
+
 client.on('messageCreate', message => {
   if (message.channel.id === DISCORD_CHANNEL_ID && !message.author.bot) {
     const displayName = message.member ? message.member.displayName : message.author.username;
@@ -56,6 +58,36 @@ client.on('messageCreate', message => {
 
 app.get('/message', (req, res) => {
   res.json({ message: latestMessage });
+});
+
+app.get('/sendnotice', (req, res) => {
+  const user = req.query.user;
+  const after = req.query.message;
+  if (!after || !user) {
+    return res.status(400).send('Missing user or message parameter');
+  }
+  let formattedMessage = `nah`
+  if (after == "join") {
+    formattedMessage = `**${user}** Has joined the game! 👋 Hello!`;
+    PlayersOnline += 1
+  } else if (after == "leave") {
+    formattedMessage = `**${user}** Has left the game! 😢 Bye!`
+    PlayersOnline -= 1
+  }
+  
+  const channel = client.channels.cache.get(DISCORD_CHANNEL_ID);
+  if (channel && formattedMessage != "nah") {
+    channel.send(formattedMessage)
+      .then(() => {
+        res.status(200).send('Message sent');
+      })
+      .catch(error => {
+        console.error('Error sending message:', error);
+        res.status(500).send('Error sending message');
+      });
+  } else {
+    res.status(500).send('Channel not found');
+  }
 });
 
 app.get('/sendmsg', (req, res) => {
