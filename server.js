@@ -101,10 +101,10 @@ app.get('/sendNotice', (req, res) => {
   console.log(after == "join")
   console.log(after == "leave")
   let formattedMessage = 'nah';
-  if (after == 'join') {
+  if (after == ' Has joined the game! 👋 Hello!' || after == "join") {
     formattedMessage = `**${user}** Has joined the game! 👋 Hello!`;
     PlayersOnline += 1;
-  } else if (after == 'leave') {
+  } else if (after == ' Has left the game! 😢 Bye!' || after == "leave") {
     formattedMessage = `**${user}** Has left the game! 😢 Bye!`;
     PlayersOnline -= 1;
   }
@@ -115,7 +115,7 @@ app.get('/sendNotice', (req, res) => {
   });
 
   const channel = client.channels.cache.get(DISCORD_CHANNEL_ID);
-  if (channel) {
+  if (channel && formattedMessage != "nah") {
     channel.send(formattedMessage)
       .then(() => {
         res.status(200).send('Message sent');
