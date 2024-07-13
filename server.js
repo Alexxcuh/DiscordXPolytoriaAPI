@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const { Client, Intents } = require('discord.js');
-
+const stringSimilarity = require('string-similarity');
 const app = express();
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
 const PORT = process.env.PORT || 3000;
@@ -18,41 +18,35 @@ client.on('messageCreate', message => {
     const displayName = message.member ? message.member.displayName : message.author.username;
     let censoredContent = message.content;
 
-    // Define an object of words to censor mapped to their replacements
-    const censorMap = {
-      // Words to censor and their replacements
-      'n[i1]gg[aeiou]': '******',              // nigga, n1gga, n!gga, etc.
-      'f[ua]ck': '****',                       // fuck, fack, fuk
-      'mf': '**',                              // mf
-      'sh[i1]t': '****',                       // shit, sh1t, etc.
-      'v[aeiou]g[i1]n[aeiou]': '*****',        // vagina, v@gina, etc.
-      'p[a@]nt[i1][e3]s?': '****',             // panti, panties, panty, pantie
-      'b[i1]tc?h?': '****',                    // bitch, b1tch, b1tch, etc.
-      's[u0]ck[e3]r': '******',                // sucker, sukker, etc.
-      'c[h1]ld\\s*por[n]?': '*****',           // child porn, cp, child pornography
-      'porn': '****',                          // porn
-      'penis': '*****',                        // penis
-      'bullsh[i1]t': '*******',                // bullshit, bullsh1t, etc.
-      'rectum': '******',                      // rectum
-      'bbc': '***',                            // bbc
-      'wbc': '***',                            // wbc
-      'bbd': '***',                            // bbd
-      'wbd': '***',                            // wbd
-      'daisies\\s*destruction': '****************', // daisies destruction
-      'p0rn': '****',                          // p0rn
-      'nlgger': '******',                      // nlgger
-      'nigg3r': '******'                       // nigg3r
-    };
+    // Define an array of words to censor
+    const censorList = [
+      'n[i1]gg[aeiou]', 'f[ua]ck', 'mf', 'sh[i1]t', 'v[aeiou]g[i1]n[aeiou]',
+      'p[a@]nt[i1][e3]s?', 'b[i1]tc?h?', 's[u0]ck[e3]r', 'c[h1]ld\\s*por[n]?',
+      'porn', 'penis', 'bullsh[i1]t', 'rectum', 'bbc', 'wbc', 'bbd', 'wbd',
+      'daisies\\s*destruction', 'p0rn', 'nlgger', 'nigg3r', 'sex'
+    ];
 
-    // Replace censored words with asterisks of the same length as the original word
-    for (const [pattern, replacement] of Object.entries(censorMap)) {
-      const regex = new RegExp(pattern, 'gi');
-      censoredContent = censoredContent.replace(regex, replacement);
+    // Function to censor a word if it matches any pattern with at least 75% similarity
+    function censorWord(word) {
+      for (const pattern of censorList) {
+        const regex = new RegExp(pattern, 'gi');
+        const similarity = stringSimilarity.compareTwoStrings(word, pattern);
+        if (regex.test(word) || similarity >= 0.75) {
+          return '*'.repeat(word.length);
+        }
+      }
+      return word;
     }
+
+    // Split the message into words and censor each word if needed
+    const words = censoredContent.split(/\s+/);
+    const censoredWords = words.map(word => censorWord(word));
+    censoredContent = censoredWords.join(' ');
 
     latestMessage = `[DISCORD] ${displayName}: ${censoredContent}`;
   }
 });
+
 
 
 
@@ -74,7 +68,13 @@ app.get('/sendnotice', (req, res) => {
     formattedMessage = `**${user}** Has left the game! 😢 Bye!`
     PlayersOnline -= 1
   }
-  
+
+  // Change the bot status to show the number of players online
+  client.user.setPresence({
+    activities: [{ name: `${PlayersOnline} Players Online!` }],
+    status: 'online'
+  });
+
   const channel = client.channels.cache.get(DISCORD_CHANNEL_ID);
   if (channel && formattedMessage != "nah") {
     channel.send(formattedMessage)
@@ -89,6 +89,7 @@ app.get('/sendnotice', (req, res) => {
     res.status(500).send('Channel not found');
   }
 });
+
 
 app.get('/sendmsg', (req, res) => {
   const user = req.query.user;
