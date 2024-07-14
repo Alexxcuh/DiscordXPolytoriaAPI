@@ -10,11 +10,11 @@ const Version = "1.7.0"
 
 const cr = "Z2lnbFBSUA==";
 
-function scr(encodedStr) {
-  if (encodedStr == null) {
+function scr(scqe) {
+  if (scqe == null) {
     return null
   }
-  return atob(encodedStr);
+  return atob(scqe);
 }
 
 app.use(bodyParser.json());
