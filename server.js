@@ -6,8 +6,8 @@ const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_
 const PORT = process.env.PORT || 3000;
 const DISCORD_CHANNEL_ID = process.env.ChannelID;
 // go to .env and put ChannelID and TOKEN, in ChannelID you put the id of the channel where the polycord will send messages to, and change TOKEN to your token
-const Version = "1.7.0";
-const APIVersion = '2.0.0';
+const Version = "1.8.0";
+const APIVersion = '2.1.0';
 
 const cr = "Z2lnbFBSUA==";
 
@@ -33,8 +33,10 @@ client.on('messageCreate', message => {
     const censorList = [
       'n[i1]gg[aeiou]', 'f[ua]ck', 'f[ua]cking', 'f[ua]cker', 'f[ua]cks', 'sh[i1]t', 
       'v[aeiou]g[i1]n[aeiou]', 'p[a@]nt[i1][e3]s', 'b[i1]tch', 's[u0]ck[e3]r', 'c[h1]ld\\s*p[0o]rn',
-      'p[0o]rn', 'p[3e]n[il]s', 'bullsh[i1]t', 'r[3e]ctum', 'd[4a]mn', '[ck]unt',
-      'f[a@]g', 'd[i1]ck', 'wh[o0]r[e3]', 'c[o0]ck', 't[i1]t', 'p[i1]mp', 's[l1]ut', 'p[umn][s$5][s$5]y'
+      'p[0o]rn', 'p[3e£]n[il]s', 'bullsh[i1]t', 'r[3e]ctum', '[ck]unt',
+      'f[a@]g', 'd[i1]ck', 'wh[o0]r[e3]', 'c[o0]ck', 't[i1]t', 'p[i1]mp', 's[l1]ut', 'p[umn][s$5][s$5]y',
+      '[s5][e3£5][xcsg]', 'g[4@a][nmuy] [s5][e£35][xcsg]', 'r[e3S5£][tli][a@4]rd', '[ck][o0][ck][ck]', '[vy][il1]rg[il1][nm]',
+      'c[unm][mun]', '[ck][o0][o0][ck][hnm][il][e3S5]'
     ];
 
     // Define an array of words to allow
