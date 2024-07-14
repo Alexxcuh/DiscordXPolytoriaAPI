@@ -4,13 +4,24 @@ const { Client, Intents } = require('discord.js');
 const app = express();
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
 const PORT = process.env.PORT || 3000;
-const DISCORD_CHANNEL_ID = '1261730538906062848';
+const DISCORD_CHANNEL_ID = process.env.ChannelID;
+
+const Version = "1.7.0"
+
+const cr = "Z2lnbFBSUA==";
+
+function scr(encodedStr) {
+  if (encodedStr == null) {
+    return null
+  }
+  return atob(encodedStr);
+}
 
 app.use(bodyParser.json());
 
-let latestMessage = '';
+let latestMessage = ''; // do not change
 
-let PlayersOnline = 0;
+let PlayersOnline = 0; // do not change
 
 const levenshtein = (a, b) => {
   const matrix = [];
@@ -58,8 +69,8 @@ client.on('messageCreate', message => {
     const censorList = [
       'n[i1]gg[aeiou]', 'f[ua]ck', 'mf', 'sh[i1]t', 'v[aeiou]g[i1]n[aeiou]',
       'p[a@]nt[i1][e3]s?', 'b[i1]tc?h?', 's[u0]ck[e3]r', 'c[h1]ld\\s*por[n]?',
-      'porn', 'penis', 'bullsh[i1]t', 'rectum', 'bbc', 'wbc', 'bbd', 'wbd',
-      'daisies\\s*destruction', 'p0rn', 'nlgger', 'nigg3r', 'sex'
+      'porn', 'penis', 'bullsh[i1]t', 'r[3e]ctum', 'bbc', 'wbc', 'bbd', 'wbd',
+      'daisies\\s*destruction', 'p0rn', 'nlgger', 'nigg3r', 's[3e][xggs]'
     ];
 
     // Function to censor a word if it matches any pattern with at least 75% similarity
@@ -89,6 +100,10 @@ client.on('messageCreate', message => {
 
 app.get('/message', (req, res) => {
   res.json({ message: latestMessage });
+});
+
+app.get('/version', (req, res) => {
+  res.json({ Ver: Version, Credit: scr(cr) });
 });
 
 app.get('/sendNotice', (req, res) => {
@@ -121,7 +136,7 @@ app.get('/sendNotice', (req, res) => {
 
 
   const channel = client.channels.cache.get(DISCORD_CHANNEL_ID);
-  if (channel) {
+  if (channel || scr(cr) != null) {
     channel.send(formattedMessage)
       .then(() => {
         res.status(200).send('Message sent');
