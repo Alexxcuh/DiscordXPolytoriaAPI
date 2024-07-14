@@ -24,43 +24,6 @@ let latestMessage = ''; // do not change
 
 let PlayersOnline = 0; // do not change
 
-const levenshtein = (a, b) => {
-  const matrix = [];
-
-  // Increment along the first column of each row
-  for (let i = 0; i <= b.length; i++) {
-    matrix[i] = [i];
-  }
-
-  // Increment each column in the first row
-  for (let j = 0; j <= a.length; j++) {
-    matrix[0][j] = j;
-  }
-
-  // Fill in the rest of the matrix
-  for (let i = 1; i <= b.length; i++) {
-    for (let j = 1; j <= a.length; j++) {
-      if (b.charAt(i - 1) === a.charAt(j - 1)) {
-        matrix[i][j] = matrix[i - 1][j - 1];
-      } else {
-        matrix[i][j] = Math.min(
-          matrix[i - 1][j - 1] + 1, // substitution
-          Math.min(matrix[i][j - 1] + 1, // insertion
-          matrix[i - 1][j] + 1) // deletion
-        );
-      }
-    }
-  }
-
-  return matrix[b.length][a.length];
-};
-
-// Function to calculate similarity ratio
-const similarity = (a, b) => {
-  const distance = levenshtein(a, b);
-  return (1 - distance / Math.max(a.length, b.length));
-};
-
 client.on('messageCreate', message => {
   if (message.channel.id === DISCORD_CHANNEL_ID && !message.author.bot) {
     const displayName = message.member ? message.member.displayName : message.author.username;
@@ -68,10 +31,10 @@ client.on('messageCreate', message => {
 
     // Define an array of words to censor
     const censorList = [
-      '\\bn[i1]gg[aeiou]\\b', '\\bf[ua]ck\\b', '\\bf[ua]cking\\b', '\\bf[ua]cker\\b', '\\bf[ua]cks\\b', '\\bsh[i1]t\\b', 
-      '\\bv[aeiou]g[i1]n[aeiou]\\b', '\\bp[a@]nt[i1][e3]s\\b', '\\bb[i1]tch\\b', '\\bs[u0]ck[e3]r\\b', '\\bc[h1]ld\\s*p[0o]rn\\b',
-      '\\bp[0o]rn\\b', '\\bp[3e]n[il]s\\b', '\\bbullsh[i1]t\\b', '\\br[3e]ctum\\b', '\\bd[4a]mn\\b', '\\b[ck]unt\\b',
-      '\\bf[a@]ggot\\b', '\\bd[i1]ck\\b', '\\bwh[o0]r[e3]\\b', '\\bc[o0]ck\\b', '\\bt[i1]t\\b', '\\bp[i1]mp\\b', '\\bs[l1]ut\\b'
+      'n[i1]gg[aeiou]', 'f[ua]ck', 'f[ua]cking', 'f[ua]cker', 'f[ua]cks', 'sh[i1]t', 
+      'v[aeiou]g[i1]n[aeiou]', 'p[a@]nt[i1][e3]s', 'b[i1]tch', 's[u0]ck[e3]r', 'c[h1]ld\\s*p[0o]rn',
+      'p[0o]rn', 'p[3e]n[il]s', 'bullsh[i1]t', 'r[3e]ctum', 'd[4a]mn', '[ck]unt',
+      'f[a@]g', 'd[i1]ck', 'wh[o0]r[e3]', 'c[o0]ck', 't[i1]t', 'p[i1]mp', 's[l1]ut', 'p[umn][s$5][s$5]y'
     ];
 
     // Define an array of words to allow
@@ -85,6 +48,44 @@ client.on('messageCreate', message => {
       return allowList.some(allowedWord => allowedWord.toLowerCase() === word.toLowerCase());
     }
 
+    // Levenshtein distance function
+    const levenshtein = (a, b) => {
+      const matrix = [];
+
+      // Increment along the first column of each row
+      for (let i = 0; i <= b.length; i++) {
+        matrix[i] = [i];
+      }
+
+      // Increment each column in the first row
+      for (let j = 0; j <= a.length; j++) {
+        matrix[0][j] = j;
+      }
+
+      // Fill in the rest of the matrix
+      for (let i = 1; i <= b.length; i++) {
+        for (let j = 1; j <= a.length; j++) {
+          if (b.charAt(i - 1) === a.charAt(j - 1)) {
+            matrix[i][j] = matrix[i - 1][j - 1];
+          } else {
+            matrix[i][j] = Math.min(
+              matrix[i - 1][j - 1] + 1, // substitution
+              Math.min(matrix[i][j - 1] + 1, // insertion
+              matrix[i - 1][j] + 1) // deletion
+            );
+          }
+        }
+      }
+
+      return matrix[b.length][a.length];
+    };
+
+    // Function to calculate similarity ratio
+    const similarity = (a, b) => {
+      const distance = levenshtein(a, b);
+      return (1 - distance / Math.max(a.length, b.length));
+    };
+
     // Function to censor a word if it matches any pattern in the censor list
     function censorWord(word) {
       if (isAllowed(word)) {
@@ -92,7 +93,7 @@ client.on('messageCreate', message => {
       }
       for (const pattern of censorList) {
         const regex = new RegExp(pattern, 'gi');
-        if (regex.test(word)) {
+        if (regex.test(word) || similarity(word, pattern.replace(/\\/g, '')) >= 0.75) {
           return '*'.repeat(word.length);
         }
       }
