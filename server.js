@@ -5,7 +5,7 @@ const app = express();
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
 const PORT = process.env.PORT || 3000;
 const DISCORD_CHANNEL_ID = process.env.ChannelID;
-
+// go to .env and put ChannelID and TOKEN, in ChannelID you put the id of the channel where the polycord will send messages to, and change TOKEN to your token
 const Version = "1.7.0";
 const APIVersion = '2.0.0';
 
@@ -68,18 +68,31 @@ client.on('messageCreate', message => {
 
     // Define an array of words to censor
     const censorList = [
-      'n[i1]gg[aeiou]', 'f[ua]ck', 'mf', 'sh[i1]t', 'v[aeiou]g[i1]n[aeiou]',
-      'p[a@]nt[i1][e3]s?', 'b[i1]tc?h?', 's[u0]ck[e3]r', 'c[h1]ld\\s*por[n]?',
-      'porn', 'penis', 'bullsh[i1]t', 'r[3e]ctum', 'bbc', 'wbc', 'bbd', 'wbd',
-      'daisies\\s*destruction', 'p0rn', 'nlgger', 'nigg3r', 's[3e][xggs]'
+      '\\bn[i1]gg[aeiou]\\b', '\\bf[ua]ck\\b', '\\bf[ua]cking\\b', '\\bf[ua]cker\\b', '\\bf[ua]cks\\b', '\\bsh[i1]t\\b', 
+      '\\bv[aeiou]g[i1]n[aeiou]\\b', '\\bp[a@]nt[i1][e3]s\\b', '\\bb[i1]tch\\b', '\\bs[u0]ck[e3]r\\b', '\\bc[h1]ld\\s*p[0o]rn\\b',
+      '\\bp[0o]rn\\b', '\\bp[3e]n[il]s\\b', '\\bbullsh[i1]t\\b', '\\br[3e]ctum\\b', '\\bd[4a]mn\\b', '\\b[ck]unt\\b',
+      '\\bf[a@]ggot\\b', '\\bd[i1]ck\\b', '\\bwh[o0]r[e3]\\b', '\\bc[o0]ck\\b', '\\bt[i1]t\\b', '\\bp[i1]mp\\b', '\\bs[l1]ut\\b'
     ];
 
-    // Function to censor a word if it matches any pattern with at least 75% similarity
+    // Define an array of words to allow
+    const allowList = [
+      'is', 'bro', 'censored', 'works', 'what', 'time', 'i', "it's", 'its', "it", 'work', "doesn't", "does", "doesnt",
+      'false', 'positives', 'no'
+    ];
+
+    // Function to check if a word is in the allow list
+    function isAllowed(word) {
+      return allowList.some(allowedWord => allowedWord.toLowerCase() === word.toLowerCase());
+    }
+
+    // Function to censor a word if it matches any pattern in the censor list
     function censorWord(word) {
+      if (isAllowed(word)) {
+        return word; // Return the word if it is in the allow list
+      }
       for (const pattern of censorList) {
         const regex = new RegExp(pattern, 'gi');
-        const similarityRatio = similarity(word, pattern);
-        if (regex.test(word) || similarityRatio >= 0.75) {
+        if (regex.test(word)) {
           return '*'.repeat(word.length);
         }
       }
@@ -94,9 +107,6 @@ client.on('messageCreate', message => {
     latestMessage = `[DISCORD] ${displayName}: ${censoredContent}`;
   }
 });
-
-
-
 
 
 app.get('/message', (req, res) => {
@@ -158,7 +168,7 @@ app.get('/sendmsg', (req, res) => {
   if (!user || !messageContent) {
     return res.status(400).send('Missing user or message parameter');
   }
-
+  
   const formattedMessage = `**${user}**: ${messageContent}`;
   
   const channel = client.channels.cache.get(DISCORD_CHANNEL_ID);
