@@ -6,7 +6,8 @@ const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_
 const PORT = process.env.PORT || 3000;
 const DISCORD_CHANNEL_ID = process.env.ChannelID;
 
-const Version = "1.7.0"
+const Version = "1.7.0";
+const APIVersion = '2.0.0';
 
 const cr = "Z2lnbFBSUA==";
 
@@ -103,7 +104,7 @@ app.get('/message', (req, res) => {
 });
 
 app.get('/version', (req, res) => {
-  res.json({ Ver: Version, Credit: scr(cr) });
+  res.json({ ScriptVer: Version, APIVer: APIVersion, Credit: scr(cr) });
 });
 
 app.get('/sendNotice', (req, res) => {
