@@ -15,8 +15,8 @@
     "discord.js": "^13.6.0",
     "express": "^4.19.2",
     "body-parser": "^1.20.2",
-    "@discordjs/rest": "^0.2.0",
-    "discord-api-types": "^0.24.1",
+    "@discordjs/rest": "^2.0.0",
+    "discord-api-types": "^0.37.92",
     "web-streams-polyfill": "^2.0.0",
     "node-fetch": "^2.7.0",
     "undici": "^4.13.1"
