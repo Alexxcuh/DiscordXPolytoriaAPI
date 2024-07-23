@@ -1,11 +1,11 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const { Client, Intents } = require('discord.js');
+const { Client, Intents, MessageEmbed } = require('discord.js');
 const app = express();
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
 const PORT = process.env.PORT || 3000;
-const DISCORD_CHANNEL_ID = process.env.ChannelID;
 // go to .env and put ChannelID and TOKEN, in ChannelID you put the id of the channel where the polycord will send messages to, and change TOKEN to your token
+const DISCORD_CHANNEL_ID = process.env.ChannelID;
 const Version = "1.8.0";
 const APIVersion = '2.1.0';
 
@@ -13,16 +13,16 @@ const cr = "Z2lnbFBSUA==";
 
 function scr(scqe) {
   if (scqe == null) {
-    return null
+    return null;
   }
-  return atob(scqe);
+  return Buffer.from(scqe, 'base64').toString('utf-8');
 }
 
 app.use(bodyParser.json());
 
 let latestMessage = ''; // do not change
-
 let PlayersOnline = 0; // do not change
+let playerList = {}; // do not change
 
 client.on('messageCreate', message => {
   if (message.channel.id === DISCORD_CHANNEL_ID && !message.author.bot) {
@@ -31,7 +31,7 @@ client.on('messageCreate', message => {
 
     // Define an array of words to censor
     const censorList = [
-      'n[i1]gg[aeiou]', 'f[ua]ck', 'f[ua]cking', 'f[ua]cker', 'f[ua]cks', 'sh[i1]t', 
+      'n[i1]gg[aeiou]', 'f[ua]ck', 'f[ua]cking', 'f[ua]cker', 'f[ua]cks', 'sh[i1]t',
       'v[aeiou]g[i1]n[aeiou]', 'p[a@]nt[i1][e3]s', 'b[i1]tch', 's[u0]ck[e3]r', 'c[h1]ld\\s*p[0o]rn',
       'p[0o]rn', 'p[3e£]n[il]s', 'bullsh[i1]t', 'r[3e]ctum', '[ck]unt',
       'f[a@]g', 'd[i1]ck', 'wh[o0]r[e3]', 'c[o0]ck', 't[i1]t', 'p[i1]mp', 's[l1]ut', 'p[umn][s$5][s$5]y',
@@ -111,6 +111,39 @@ client.on('messageCreate', message => {
   }
 });
 
+// Command handler for .list
+client.on('messageCreate', message => {
+  if (message.content === '.list' && message.channel.id === DISCORD_CHANNEL_ID) {
+    let description = '';
+    if (PlayersOnline > 0) {
+      description = Object.keys(playerList).join('\n');
+    } else {
+      description = '**No players online atm :cry:**';
+    }
+    
+    const embed = new MessageEmbed()
+      .setTitle('**Polycord Player List**')
+      .setDescription(description)
+      .setFooter({ text: `By giglPRP | Players online: ${PlayersOnline}` })
+      .setColor('#E33727'); // Set your desired color here
+    
+    message.channel.send({ embeds: [embed] });
+  }
+
+  if (message.content === '.help' && message.channel.id === DISCORD_CHANNEL_ID) {
+    const embed = new MessageEmbed()
+      .setTitle('**Polycord Help**')
+      .setDescription(
+        "`.list` shows the players currently online\n" +
+        "`.help` displays this help message"
+      )
+      .setFooter({ text: `By giglPRP | Players online: ${PlayersOnline}` })
+      .setColor('#E33727'); // Set your desired color here
+    
+    message.channel.send({ embeds: [embed] });
+  }
+});
+
 
 app.get('/message', (req, res) => {
   res.json({ message: latestMessage });
@@ -124,18 +157,20 @@ app.get('/sendNotice', (req, res) => {
   const user = req.query.user;
   const after = req.query.after;
   const players = req.query.players;
-  console.log(players)
-  console.log(after)
+  console.log(players);
+  console.log(after);
   if (!after || !user || !players) {
     return res.status(400).send('Missing user or message parameter');
   }
   let formattedMessage = 'nah';
   if (after == ' Has joined the game! 👋 Hello!' || after == "join") {
     formattedMessage = `**${user}** Has joined the game! 👋 Hello!`;
+    playerList[user] = true; // Add user to player list
   } else if (after == ' Has left the game! 😢 Bye!' || after == "leave") {
     formattedMessage = `**${user}** Has left the game! 😢 Bye!`;
+    delete playerList[user]; // Remove user from player list
   }
-  PlayersOnline = players
+  PlayersOnline = players;
   if (PlayersOnline == 1) {
     client.user.setPresence({
       activities: [{ name: `${PlayersOnline} Player Online!`, type: 'WATCHING' }],
@@ -147,7 +182,6 @@ app.get('/sendNotice', (req, res) => {
       status: 'online'
     });
   }
-
 
   const channel = client.channels.cache.get(DISCORD_CHANNEL_ID);
   if (channel || scr(cr) != null) {
@@ -164,16 +198,15 @@ app.get('/sendNotice', (req, res) => {
   }
 });
 
-
 app.get('/sendmsg', (req, res) => {
   const user = req.query.user;
   const messageContent = req.query.message;
   if (!user || !messageContent) {
     return res.status(400).send('Missing user or message parameter');
   }
-  
+
   const formattedMessage = `**${user}**: ${messageContent}`;
-  
+
   const channel = client.channels.cache.get(DISCORD_CHANNEL_ID);
   if (channel) {
     channel.send(formattedMessage)
