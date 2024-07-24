@@ -1,10 +1,10 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const { Client, Intents, MessageEmbed } = require('discord.js');
+const fs = require('fs');
 const app = express();
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
 const PORT = process.env.PORT || 3000;
-// go to .env and put ChannelID and TOKEN, in ChannelID you put the id of the channel where the polycord will send messages to, and change TOKEN to your token
 const DISCORD_CHANNEL_ID = process.env.ChannelID;
 const Version = "1.8.0";
 const APIVersion = '2.1.0';
@@ -22,7 +22,30 @@ app.use(bodyParser.json());
 
 let latestMessage = ''; // do not change
 let PlayersOnline = 0; // do not change
-let playerList = {}; // do not change
+let playerList = {}; // New player list
+
+// Load banlist.json if it exists
+let banList = {};
+if (fs.existsSync('banlist.json')) {
+  banList = JSON.parse(fs.readFileSync('banlist.json'));
+}
+
+// Default configuration settings
+let config = {
+  mainColor: '#E33727',
+  listTitle: '**Polycord Player List**',
+  noPlayersDescription: '**No players online atm :cry:**',
+  listDescription: '${playerList}',
+  polytoriaColor: '#5964F0',
+  helpTitle: '**Polycord Help**',
+  banTitle: '**Successfully Banned User**',
+  unbanTitle: '**Successfully Unbanned User**',
+};
+
+// Load config.json if it exists
+if (fs.existsSync('config.json')) {
+  config = JSON.parse(fs.readFileSync('config.json'));
+}
 
 client.on('messageCreate', message => {
   if (message.channel.id === DISCORD_CHANNEL_ID && !message.author.bot) {
@@ -31,7 +54,7 @@ client.on('messageCreate', message => {
 
     // Define an array of words to censor
     const censorList = [
-      'n[i1]gg[aeiou]', 'f[ua]ck', 'f[ua]cking', 'f[ua]cker', 'f[ua]cks', 'sh[i1]t',
+      'n[i1]gg[aeiou]', 'f[ua][ck]?[ck]?', 'f[ua][ck][ck]ing', 'f[ua][ck][ck]?e?r', 'f[ua][ck][ck]s', 'sh[i1]t',
       'v[aeiou]g[i1]n[aeiou]', 'p[a@]nt[i1][e3]s', 'b[i1]tch', 's[u0]ck[e3]r', 'c[h1]ld\\s*p[0o]rn',
       'p[0o]rn', 'p[3e£]n[il]s', 'bullsh[i1]t', 'r[3e]ctum', '[ck]unt',
       'f[a@]g', 'd[i1]ck', 'wh[o0]r[e3]', 'c[o0]ck', 't[i1]t', 'p[i1]mp', 's[l1]ut', 'p[umn][s$5][s$5]y',
@@ -87,7 +110,7 @@ client.on('messageCreate', message => {
       const distance = levenshtein(a, b);
       return (1 - distance / Math.max(a.length, b.length));
     };
-
+    let flagged = []
     // Function to censor a word if it matches any pattern in the censor list
     function censorWord(word) {
       if (isAllowed(word)) {
@@ -96,18 +119,32 @@ client.on('messageCreate', message => {
       for (const pattern of censorList) {
         const regex = new RegExp(pattern, 'gi');
         if (regex.test(word) || similarity(word, pattern.replace(/\\/g, '')) >= 0.75) {
-          return '*'.repeat(word.length);
+          flagged.push(word);
+          return '*'.repeat(word.length); // Replace the word with asterisks of the same length
         }
       }
       return word;
     }
-
+    
     // Split the message into words and censor each word if needed
     const words = censoredContent.split(/\s+/);
+    flagged = []
     const censoredWords = words.map(word => censorWord(word));
     censoredContent = censoredWords.join(' ');
-
-    latestMessage = `[DISCORD] ${displayName}: ${censoredContent}`;
+    if (message.content != censoredContent) {
+      const embed = new MessageEmbed()
+      .setTitle('**Message Moderated!**')
+      .setDescription(
+        "Your message has Slurs!, the following words were filtered:\n" +
+        "`"+ flagged +"`\n" +
+        "Don't worry, the message still got sent, but moderated!"
+      )
+      .setFooter({ text: `By giglPRP | Players online: ${PlayersOnline}` })
+      .setColor(config.mainColor); // Use config color
+    
+    message.channel.send({ embeds: [embed] });
+    }
+    latestMessage = `<color=${config.polytoriaColor}>[DISCORD] ${displayName}:</color> ${censoredContent}`;
   }
 });
 
@@ -118,32 +155,147 @@ client.on('messageCreate', message => {
     if (PlayersOnline > 0) {
       description = Object.keys(playerList).join('\n');
     } else {
-      description = '**No players online atm :cry:**';
+      description = config.noPlayersDescription;
     }
     
     const embed = new MessageEmbed()
-      .setTitle('**Polycord Player List**')
+      .setTitle(config.listTitle)
       .setDescription(description)
       .setFooter({ text: `By giglPRP | Players online: ${PlayersOnline}` })
-      .setColor('#E33727'); // Set your desired color here
+      .setColor(config.mainColor); // Use config color
     
     message.channel.send({ embeds: [embed] });
   }
 
   if (message.content === '.help' && message.channel.id === DISCORD_CHANNEL_ID) {
     const embed = new MessageEmbed()
-      .setTitle('**Polycord Help**')
+      .setTitle(config.helpTitle)
       .setDescription(
         "`.list` shows the players currently online\n" +
-        "`.help` displays this help message"
+        "`.help` displays this help message\n" +
+        "`.ban <user> <reason>` bans a user with a reason\n" +
+        "`.unban <user>` unbans a user\n" +
+        "`.config` displays current configuration settings\n" +
+        "`.config <setting> <value>` changes a configuration setting\n"
       )
       .setFooter({ text: `By giglPRP | Players online: ${PlayersOnline}` })
-      .setColor('#E33727'); // Set your desired color here
+      .setColor(config.mainColor); // Use config color
     
     message.channel.send({ embeds: [embed] });
   }
-});
 
+  if (message.content.startsWith('.ban') && message.channel.id === DISCORD_CHANNEL_ID) {
+    if (!message.member.roles.cache.has('1261731700766150698')) {
+      return message.channel.send('You do not have permission to use this command.');
+    }
+
+    const [command, user, ...reasonArr] = message.content.split(' ');
+    const reason = reasonArr.join(' ');
+
+    if (!user || !reason) {
+      return message.channel.send('Usage: `.ban <user> <reason>`');
+    }
+
+    banList[user] = reason;
+    fs.writeFileSync('banlist.json', JSON.stringify(banList));
+
+    const embed = new MessageEmbed()
+      .setTitle(config.banTitle)
+      .setDescription(`\`${user}\` got banned! Reason: \`${reason}\``)
+      .setFooter({ text: `By giglPRP | Players online: ${PlayersOnline}` })
+      .setColor(config.mainColor); // Use config color
+    
+    message.channel.send({ embeds: [embed] });
+  }
+
+  if (message.content.startsWith('.unban') && message.channel.id === DISCORD_CHANNEL_ID) {
+    if (!message.member.roles.cache.has('1261731700766150698')) {
+      return message.channel.send('You do not have permission to use this command.');
+    }
+
+    const [command, user] = message.content.split(' ');
+
+    if (!user) {
+      return message.channel.send('Usage: `.unban <user>`');
+    }
+
+    if (banList[user]) {
+      delete banList[user];
+      fs.writeFileSync('banlist.json', JSON.stringify(banList));
+
+      const embed = new MessageEmbed()
+        .setTitle(config.unbanTitle)
+        .setDescription(`\`${user}\` has been unbanned.`)
+        .setFooter({ text: `By giglPRP | Players online: ${PlayersOnline}` })
+        .setColor(config.mainColor); // Use config color
+      
+      message.channel.send({ embeds: [embed] });
+    } else {
+      message.channel.send(`\`${user}\` is not banned.`);
+    }
+  }
+
+  if (message.content.startsWith('.config') && message.channel.id === DISCORD_CHANNEL_ID) {
+    if (!message.member.roles.cache.has('1261731700766150698')) {
+      return message.channel.send('You do not have permission to use this command.');
+    }
+
+    const args = message.content.split(' ');
+    const setting = args[1];
+    const value = args.slice(2).join(' ');
+
+    if (!setting || !value) {
+      const configEmbed = new MessageEmbed()
+        .setTitle('**Current Configuration**')
+        .setDescription(
+          `**Main Color:** ${config.mainColor}\n` +
+          `**List Title:** ${config.listTitle}\n` +
+          `**No Players Description:** ${config.noPlayersDescription}\n` +
+          `**List Description:** ${config.listDescription}\n` +
+          `**Polytoria Color:** ${config.polytoriaColor}\n` +
+          `**Help Title:** ${config.helpTitle}\n` +
+          `**Ban Title:** ${config.banTitle}\n` +
+          `**Unban Title:** ${config.unbanTitle}\n`
+        )
+        .setFooter({ text: `By giglPRP | Players online: ${PlayersOnline}` })
+        .setColor(config.mainColor); // Use config color
+      
+      return message.channel.send({ embeds: [configEmbed] });
+    }
+
+    switch (setting.toLowerCase()) {
+      case 'maincolor':
+        config.mainColor = value;
+        break;
+      case 'listtitle':
+        config.listTitle = value;
+        break;
+      case 'noplayersdescription':
+        config.noPlayersDescription = value;
+        break;
+      case 'listdescription':
+        config.listDescription = value;
+        break;
+      case 'polytoriacolor':
+        config.polytoriaColor = value;
+        break;
+      case 'helptitle':
+        config.helpTitle = value;
+        break;
+      case 'bantitle':
+        config.banTitle = value;
+        break;
+      case 'unbantitle':
+        config.unbanTitle = value;
+        break;
+      default:
+        return message.channel.send('Invalid setting. Use `.config` to view available settings.');
+    }
+
+    fs.writeFileSync('config.json', JSON.stringify(config));
+    message.channel.send(`Configuration updated: \`${setting}\` is now set to \`${value}\``);
+  }
+});
 
 app.get('/message', (req, res) => {
   res.json({ message: latestMessage });
@@ -157,11 +309,16 @@ app.get('/sendNotice', (req, res) => {
   const user = req.query.user;
   const after = req.query.after;
   const players = req.query.players;
-  console.log(players);
-  console.log(after);
+
   if (!after || !user || !players) {
     return res.status(400).send('Missing user or message parameter');
   }
+
+  // Check if the user is banned
+  if (banList[user]) {
+    return res.status(403).json({ banned: "true", reason: banList[user] });
+  }
+
   let formattedMessage = 'nah';
   if (after == ' Has joined the game! 👋 Hello!' || after == "join") {
     formattedMessage = `**${user}** Has joined the game! 👋 Hello!`;
