@@ -1,0 +1,12 @@
+{
+  "mainColor": "#E33727",
+  "listTitle": "**Polycord Player List**",
+  "noPlayersDescription": "**No players online atm :cry:**",
+  "listDescription": "${playerList}",
+  "polytoriaColor": "#5964F0",
+  "helpTitle": "**Polycord Help**",
+  "banTitle": "**Successfully Banned User**",
+  "unbanTitle": "**Successfully Unbanned User**",
+  "chatChannelID": "",
+  "botChannelID": "<#1261730538906062848>"
+}
