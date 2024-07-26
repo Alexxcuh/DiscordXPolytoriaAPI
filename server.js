@@ -10,7 +10,7 @@ const DISCORD_CHANNEL_ID = process.env.ChannelID;
 const MODERATOR_CHANNEL_ID = process.env.ModeratorChannelID;
 const Version = "1.9.0";
 const APIVersion = '2.2.2';
-
+const PolytoriaServerIP = "135.181.21.175" // probally wont be the same
 const author = 'Polycord Team';
 const cr = "Z2lnbFBSUA==";
 
@@ -458,14 +458,26 @@ client.on('messageCreate', message => {
 });
 
 app.get('/message', (req, res) => {
+  const forwardedIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+  if (!forwardedIp.startsWith(PolytoriaServerIP)) {
+    return res.status(404).send("Access Denied")
+  }
   res.json({ message: latestMessage });
 });
 
 app.get('/version', (req, res) => {
+  const forwardedIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+  if (!forwardedIp.startsWith(PolytoriaServerIP)) {
+    return res.status(404).send("Access Denied")
+  }
   res.json({ ScriptVer: Version, APIVer: APIVersion, Credit: scr(cr) });
 });
 
 app.get('/sendNotice', (req, res) => {
+  const forwardedIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+  if (!forwardedIp.startsWith(PolytoriaServerIP)) {
+    return res.status(404).send("Access Denied")
+  }
   const user = req.query.user;
   const after = req.query.after;
   const players = req.query.players;
@@ -505,7 +517,43 @@ app.get('/sendNotice', (req, res) => {
   }
 });
 
+app.get('/ban', (req, res) => {
+  const forwardedIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+  if (!forwardedIp.startsWith(PolytoriaServerIP)) {
+    return res.status(404).send("Access Denied")
+  }
+  const user = req.query.user;
+  const reason = req.query.message;
+  if (!user || !reason) {
+    return res.status(400).send('Missing user or message parameter');
+  }
+  let channel = client.channels.cache.get(MODERATOR_CHANNEL_ID);
+  if (channel) {
+    const embed = new MessageEmbed()
+    .setTitle(config.banTitle)
+    .setDescription("`" + user + "` got banned! Reason: `" + reason + "`")
+    .setFooter({ text: `Created By ${author} | Players online: ${PlayersOnline}` })
+    .setColor(config.mainColor); // Use config color
+      
+    channel.send({ embeds: [embed] })
+  }
+  channel = client.channels.cache.get(DISCORD_CHANNEL_ID);
+  if (channel) {
+    const embed = new MessageEmbed()
+    .setTitle(config.banTitle)
+    .setDescription("`" + user + "` got banned! Reason: `" + reason + "`")
+    .setFooter({ text: `Created By ${author} | Players online: ${PlayersOnline}` })
+    .setColor(config.mainColor); // Use config color
+      
+    channel.send({ embeds: [embed] })
+  }
+})
+
 app.get('/sendmsg', (req, res) => {
+  const forwardedIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+  if (!forwardedIp.startsWith(PolytoriaServerIP)) {
+    return res.status(404).send("Access Denied")
+  }
   const user = req.query.user;
   const messageContent = req.query.message;
   if (!user || !messageContent) {
