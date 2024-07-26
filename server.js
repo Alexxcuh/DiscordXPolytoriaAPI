@@ -10,7 +10,6 @@ const DISCORD_CHANNEL_ID = process.env.ChannelID;
 const MODERATOR_CHANNEL_ID = process.env.ModeratorChannelID;
 const Version = "1.9.0";
 const APIVersion = '2.2.2';
-const PolytoriaServerIP = "135.181.21.175" // probally wont be the same
 const author = 'Polycord Team';
 const cr = "Z2lnbFBSUA==";
 
@@ -235,6 +234,7 @@ client.on('messageCreate', async message => {
     const censoredWords = words.map(word => censorWord(word));
     censoredContent = censoredWords.join(' ');
     latestMessage = `<color=${config.polytoriaColor}>[DISCORD] ${displayName}:</color> ${censoredContent}`;
+    
     if (message.reference) {
       try {
         const repliedMessage = await message.channel.messages.fetch(message.reference.messageId)
@@ -243,17 +243,19 @@ client.on('messageCreate', async message => {
         const repliedwords = repliedContent.split(/\s+/);
         const repcensoredWords = repliedwords.map(word => censorWord(word));
         repliedContent = repcensoredWords.join(' ');
+        console.log(repliedDisplayName)
+        console.log(repliedDisplayName == "Polycord")
         if (repliedDisplayName == "Polycord") {
           let { username2, message2 } = processMessage(repliedContent);
-          latestMessage = `<color=#bfbfbf> v---> </color> ${username2}: <color=#bfbfbf>${message2}</color> \n<color=${config.polytoriaColor}>[DISCORD] ${displayName}:</color> ${censoredContent}`;
+          console.log(username2, message2)
+          latestMessage = `<color=#bfbfbf> v---> </color><color=#DEDEDE> ${username2}: ${message2}</color> \n<color=${config.polytoriaColor}>[DISCORD] ${displayName}:</color> ${censoredContent}`;
           console.log(latestMessage)
+        } else {
+          latestMessage = `<color=#bfbfbf> v---> </color><color=${config.polytoriaColor}>${repliedDisplayName}:</color><color=#DEDEDE> ${repliedContent}</color> \n<color=${config.polytoriaColor}>[DISCORD] ${displayName}:</color> ${censoredContent}`;
         }
       } catch (error) {
         console.error('Error fetching replied message:', error);
       }
-    }
-    if (repliedContent != "") {
-      latestMessage = `<color=#bfbfbf> v---> </color><color=${config.polytoriaColor}>${repliedDisplayName}:</color><color=#bfbfbf> ${repliedContent}</color> \n<color=${config.polytoriaColor}>[DISCORD] ${displayName}:</color> ${censoredContent}`;
     }
     
     if (message.content != censoredContent) {
@@ -458,26 +460,14 @@ client.on('messageCreate', message => {
 });
 
 app.get('/message', (req, res) => {
-  const forwardedIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-  if (!forwardedIp.startsWith(PolytoriaServerIP)) {
-    return res.status(404).send("Access Denied")
-  }
   res.json({ message: latestMessage });
 });
 
 app.get('/version', (req, res) => {
-  const forwardedIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-  if (!forwardedIp.startsWith(PolytoriaServerIP)) {
-    return res.status(404).send("Access Denied")
-  }
   res.json({ ScriptVer: Version, APIVer: APIVersion, Credit: scr(cr) });
 });
 
 app.get('/sendNotice', (req, res) => {
-  const forwardedIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-  if (!forwardedIp.startsWith(PolytoriaServerIP)) {
-    return res.status(404).send("Access Denied")
-  }
   const user = req.query.user;
   const after = req.query.after;
   const players = req.query.players;
@@ -518,10 +508,6 @@ app.get('/sendNotice', (req, res) => {
 });
 
 app.get('/ban', (req, res) => {
-  const forwardedIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-  if (!forwardedIp.startsWith(PolytoriaServerIP)) {
-    return res.status(404).send("Access Denied")
-  }
   const user = req.query.user;
   const reason = req.query.message;
   if (!user || !reason) {
@@ -550,10 +536,6 @@ app.get('/ban', (req, res) => {
 })
 
 app.get('/sendmsg', (req, res) => {
-  const forwardedIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-  if (!forwardedIp.startsWith(PolytoriaServerIP)) {
-    return res.status(404).send("Access Denied")
-  }
   const user = req.query.user;
   const messageContent = req.query.message;
   if (!user || !messageContent) {
