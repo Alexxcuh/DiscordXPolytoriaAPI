@@ -13,8 +13,7 @@ const Version = "1.9.0";
 const APIVersion = '2.2.2';
 const author = 'Polycord Team';
 const cr = "Z2lnbFBSUA==";
-const gamename = "Cool Game!";
-const Botname = "I'm Spongebob!";
+const Botname = "Bot Name";
 
 function scr(scqe) {
   if (scqe == null) {
@@ -23,18 +22,18 @@ function scr(scqe) {
   return Buffer.from(scqe, 'base64').toString('utf-8');
 }
 
-const filter = [
-  'n[i1]gg[aeiou]','n[e3]g[a4@]', 'f[ua][ck][ck]?', 'f[ua][ck][ck]ing', 'f[ua][ck][ck]?e?r', 'f[ua][ck][ck]s', 'sh[i1]t',
-  'v[aeiou]g[i1]n[aeiou]', 'p[a@]nt[i1][e3]s', 'b[il1]tch', 's[u0]ck[e3]r', 'c[h1]ld\\s*p[0o]rn',
-  'p[0o]rn', 'p[3e£]n[il]s', 'bullsh[i1]t', 'r[3e]ctum', '[ck]unt',
-  'f[a@]g', 'd[i1l]ck', 'c[o0][nm]d[o0]m', 'wh[o0]r[e3]', 'c[o0][ck][ck]', 't[i1]t', 'p[i1]mp', 's[l1]ut', 'p[umn][s$5][s$5]y',
-  '[s5][e3£5]x', 'r[e3S5£][tli][a@4]rd', '[ck][o0][ck][ck]', '[e3]r[il1]t[s5]', '[vy][il1]rg[il1][nm]',
-  'c[unm][mun]', '[ck][o0][o0][ck][hnm][il][e3S5]', 'sh[il]t?', '[@a4][5s$][5s$]', 'P[il]zd[a@4]?', '.xyz', 'h[til][tli]p[s5]?', 'br[il]ck-h[il][li][li]', 'br[il]ckh[il][li][li]', 'bh', 'br[il]ck\\h[il][li][li]',
-  'h[il]t[li][e3]r', 'h[e3]nt[a4@][il]', 'discord.gg', 'h[o0]m[o0]', 'kys', 'd[il][li]d[o0]', 'm[o0][li][e3][s5$]t', 'p[e3]d[o0]p?h?[i1]?l?[e3]?',
-  ':3', '[uo]w[uo]', 'd[o0]xx?', 'm[a4@][s$5]tur[b3][a4@]t[e3]?', '[s5][e3]gg[s5]', 'dr[unm]g', 'g[o0][o0]n', 'm[e3]th', 'gl[a@4]z[e3]', '[s5]u[i1l]c[i1l]d[e3]'
-];
-
 app.use(bodyParser.json());
+
+// const filter = [
+//   'n[i1]gg[aeiou]','n[e3]g[a4@]', 'f[ua][ck][ck]?', 'f[ua][ck][ck]ing', 'f[ua][ck][ck]?e?r', 'f[ua][ck][ck]s', 'sh[i1]t',
+//   'v[aeiou]g[i1]n[aeiou]', 'p[a@]nt[i1][e3]s', 'b[il1]tch', 's[u0]ck[e3]r', 'c[h1]ld\\s*p[0o]rn',
+//   'p[0o]rn', 'p[3e£]n[il]s', 'bullsh[i1]t', 'r[3e]ctum', '[ck]unt',
+//   'f[a@]g', 'd[i1l]ck', 'c[o0][nm]d[o0]m', 'wh[o0]r[e3]', 'c[o0][ck][ck]', 't[i1]t', 'p[i1]mp', 's[l1]ut', 'p[umn][s$5][s$5]y',
+//   '[s5][e3£5]x', 'r[e3S5£][tli][a@4]rd', '[ck][o0][ck][ck]', '[e3]r[il1]t[s5]', '[vy][il1]rg[il1][nm]',
+//   'c[unm][mun]', '[ck][o0][o0][ck][hnm][il][e3S5]', 'sh[il]t?', '[@a4][5s$][5s$]', 'P[il]zd[a@4]?', '.xyz', 'h[til][tli]p[s5]?', 'br[il]ck-h[il][li][li]', 'br[il]ckh[il][li][li]', 'bh', 'br[il]ck\\h[il][li][li]',
+//   'h[il]t[li][e3]r', 'h[e3]nt[a4@][il]', 'discord.gg', 'h[o0]m[o0]', 'kys', 'd[il][li]d[o0]', 'm[o0][li][e3][s5$]t', 'p[e3]d[o0]p?h?[i1]?l?[e3]?',
+//   ':3', '[uo]w[uo]', 'd[o0]xx?', 'm[a4@][s$5]tur[b3][a4@]t[e3]?', '[s5][e3]gg[s5]', 'dr[unm]g', 'g[o0][o0]n', 'm[e3]th', 'gl[a@4]z[e3]', '[s5]u[i1l]c[i1l]d[e3]'
+// ];
 
 let latestMessage = ''; // do not change
 let PlayersOnline = 0; // do not change
@@ -139,11 +138,11 @@ function banUser(user, reason) {
 // Default configuration settings
 let config = {
   mainColor: '#E33727',
-  listTitle: `**Mow da lawn Player List**`,
+  listTitle: `**Polycord Player List**`,
   noPlayersDescription: '**No players online atm :cry:**',
   listDescription: '${playerList}',
   polytoriaColor: '#5964F0',
-  helpTitle: `**Mow da lawn Help**`,
+  helpTitle: `**Polycord Help**`,
   banTitle: '**Successfully Banned User**',
   unbanTitle: '**Successfully Unbanned User**',
   discordprefix: "[DISCORD]",
@@ -488,6 +487,10 @@ app.get('/message', (req, res) => {
   res.json({ message: latestMessage });
 });
 
+app.get('/filter', (req, res) => {
+  res.status(200).send(filter)
+});
+
 app.get('/version', (req, res) => {
   res.json({ ScriptVer: Version, APIVer: APIVersion, Credit: scr(cr) });
 });
@@ -586,4 +589,3 @@ client.login(process.env.TOKEN);
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
-
