@@ -8,10 +8,13 @@ const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_
 const PORT = process.env.PORT || 3000;
 const DISCORD_CHANNEL_ID = process.env.ChannelID;
 const MODERATOR_CHANNEL_ID = process.env.ModeratorChannelID;
+const ADMIN_ROLE_ID = process.env.AdminID;
 const Version = "1.9.0";
 const APIVersion = '2.2.2';
 const author = 'Polycord Team';
 const cr = "Z2lnbFBSUA==";
+const gamename = "Cool Game!";
+const Botname = "I'm Spongebob!";
 
 function scr(scqe) {
   if (scqe == null) {
@@ -19,6 +22,17 @@ function scr(scqe) {
   }
   return Buffer.from(scqe, 'base64').toString('utf-8');
 }
+
+const filter = [
+  'n[i1]gg[aeiou]','n[e3]g[a4@]', 'f[ua][ck][ck]?', 'f[ua][ck][ck]ing', 'f[ua][ck][ck]?e?r', 'f[ua][ck][ck]s', 'sh[i1]t',
+  'v[aeiou]g[i1]n[aeiou]', 'p[a@]nt[i1][e3]s', 'b[il1]tch', 's[u0]ck[e3]r', 'c[h1]ld\\s*p[0o]rn',
+  'p[0o]rn', 'p[3e£]n[il]s', 'bullsh[i1]t', 'r[3e]ctum', '[ck]unt',
+  'f[a@]g', 'd[i1l]ck', 'c[o0][nm]d[o0]m', 'wh[o0]r[e3]', 'c[o0][ck][ck]', 't[i1]t', 'p[i1]mp', 's[l1]ut', 'p[umn][s$5][s$5]y',
+  '[s5][e3£5]x', 'r[e3S5£][tli][a@4]rd', '[ck][o0][ck][ck]', '[e3]r[il1]t[s5]', '[vy][il1]rg[il1][nm]',
+  'c[unm][mun]', '[ck][o0][o0][ck][hnm][il][e3S5]', 'sh[il]t?', '[@a4][5s$][5s$]', 'P[il]zd[a@4]?', '.xyz', 'h[til][tli]p[s5]?', 'br[il]ck-h[il][li][li]', 'br[il]ckh[il][li][li]', 'bh', 'br[il]ck\\h[il][li][li]',
+  'h[il]t[li][e3]r', 'h[e3]nt[a4@][il]', 'discord.gg', 'h[o0]m[o0]', 'kys', 'd[il][li]d[o0]', 'm[o0][li][e3][s5$]t', 'p[e3]d[o0]p?h?[i1]?l?[e3]?',
+  ':3', '[uo]w[uo]', 'd[o0]xx?', 'm[a4@][s$5]tur[b3][a4@]t[e3]?', '[s5][e3]gg[s5]', 'dr[unm]g', 'g[o0][o0]n', 'm[e3]th', 'gl[a@4]z[e3]', '[s5]u[i1l]c[i1l]d[e3]'
+];
 
 app.use(bodyParser.json());
 
@@ -125,13 +139,15 @@ function banUser(user, reason) {
 // Default configuration settings
 let config = {
   mainColor: '#E33727',
-  listTitle: '**Polycord Player List**',
+  listTitle: `**Mow da lawn Player List**`,
   noPlayersDescription: '**No players online atm :cry:**',
   listDescription: '${playerList}',
   polytoriaColor: '#5964F0',
-  helpTitle: '**Polycord Help**',
+  helpTitle: `**Mow da lawn Help**`,
   banTitle: '**Successfully Banned User**',
   unbanTitle: '**Successfully Unbanned User**',
+  discordprefix: "[DISCORD]",
+  commandprefix: ".",
 };
 
 // Load config.json if it exists
@@ -143,22 +159,23 @@ if (fs.existsSync('config.json')) {
   }
 }
 
+const axios = require('axios');
+
+// apply filter
 client.on('messageCreate', async message => {
   if (message.channel.id === DISCORD_CHANNEL_ID && !message.author.bot) {
     const displayName = message.member ? message.member.displayName : message.author.username;
     let censoredContent = message.content;
 
-    // Define an array of words to censor
-    const censorList = [
-      'n[i1]gg[aeiou]','n[e3]g[a4@]', 'f[ua][ck][ck]?', 'f[ua][ck][ck]ing', 'f[ua][ck][ck]?e?r', 'f[ua][ck][ck]s', 'sh[i1]t',
-      'v[aeiou]g[i1]n[aeiou]', 'p[a@]nt[i1][e3]s', 'b[il1]tch', 's[u0]ck[e3]r', 'c[h1]ld\\s*p[0o]rn',
-      'p[0o]rn', 'p[3e£]n[il]s', 'bullsh[i1]t', 'r[3e]ctum', '[ck]unt',
-      'f[a@]g', 'd[i1]ck', 'c[o0][nm]d[o0]m', 'wh[o0]r[e3]', 'c[o0][ck][ck]', 't[i1]t', 'p[i1]mp', 's[l1]ut', 'p[umn][s$5][s$5]y',
-      '[s5][e3£5]x', 'r[e3S5£][tli][a@4]rd', '[ck][o0][ck][ck]', '[e3]r[il1]t[s5]', '[vy][il1]rg[il1][nm]',
-      'c[unm][mun]', '[ck][o0][o0][ck][hnm][il][e3S5]', 'sh[il]t?', '[@a4][5s$][5s$]', '.c[o0][mn]', 'P[il]zd?[a@4]?', '.xyz', 'h[til][tli]p[s5]?', 'br[il]ck-h[il][li][li]', 'br[il]ckh[il][li][li]', 'bh', 'br[il]ck\\h[il][li][li]',
-      'h[il]t[li][e3]r', 'h[e3]nt[a4@][il]', 'discord.gg', 'h[o0]m[o0]', 'kys', 'd[il][li]d[o0]',
-      ':3', '[uo]w[uo]', 'd[o0]xx?', 'm[a4@][s$5]tur[b3][a4@]t[e3]?', '[s5][e3]gg[s5]', 'dr[unm]g', 'g[o0][o0]n', 'm[e3]th', 'gl[a@4]z[e3]', '[s5]u[i1l]c[i1l]d[e3]'
-    ];
+    // Fetch the censor list from the /filter endpoint
+    let censorList = [];
+    try {
+      const response = await axios.get('https://frequent-satisfying-indigo.glitch.me/filter');
+      censorList = response.data;
+    } catch (error) {
+      console.error('Error fetching censor list:', error);
+      return;
+    }
 
     // Define an array of words to allow
     const allowList = [
@@ -208,7 +225,9 @@ client.on('messageCreate', async message => {
       const distance = levenshtein(a, b);
       return (1 - distance / Math.max(a.length, b.length));
     };
-    let flagged = []
+
+    let flagged = [];
+
     // Function to censor a word if it matches any pattern in the censor list
     function censorWord(word) {
       if (isAllowed(word)) {
@@ -224,65 +243,63 @@ client.on('messageCreate', async message => {
       }
       return word;
     }
-    
+
     // Split the message into words and censor each word if needed
     const words = censoredContent.split(/\s+/);
-    flagged = []
+    flagged = [];
     let repliedContent = '';
     let repliedDisplayName = "";
     let repcensoredContent = "";
     const censoredWords = words.map(word => censorWord(word));
     censoredContent = censoredWords.join(' ');
-    latestMessage = `<color=${config.polytoriaColor}>[DISCORD] ${displayName}:</color> ${censoredContent}`;
-    
+    latestMessage = `<color=${config.polytoriaColor}>${config.discordprefix} ${displayName}:</color> ${censoredContent}`;
+
     if (message.reference) {
       try {
-        const repliedMessage = await message.channel.messages.fetch(message.reference.messageId)
+        const repliedMessage = await message.channel.messages.fetch(message.reference.messageId);
         repliedContent = repliedMessage.content;
         repliedDisplayName = repliedMessage.member ? repliedMessage.member.displayName : repliedMessage.author.username;
         const repliedwords = repliedContent.split(/\s+/);
         const repcensoredWords = repliedwords.map(word => censorWord(word));
         repliedContent = repcensoredWords.join(' ');
-        console.log(repliedDisplayName)
-        console.log(repliedDisplayName == "Polycord")
-        if (repliedDisplayName == "Polycord") {
+
+        if (repliedDisplayName == Botname) {
           let { username2, message2 } = processMessage(repliedContent);
-          console.log(username2, message2)
-          latestMessage = `<color=#bfbfbf> v---> </color><color=#DEDEDE> ${username2}: ${message2}</color> \n<color=${config.polytoriaColor}>[DISCORD] ${displayName}:</color> ${censoredContent}`;
-          console.log(latestMessage)
+          latestMessage = `<color=#bfbfbf> v---> </color><color=#DEDEDE> ${username2}: ${message2}</color> \n<color=${config.polytoriaColor}>${config.discordprefix} ${displayName}:</color> ${censoredContent}`;
         } else {
-          latestMessage = `<color=#bfbfbf> v---> </color><color=${config.polytoriaColor}>${repliedDisplayName}:</color><color=#DEDEDE> ${repliedContent}</color> \n<color=${config.polytoriaColor}>[DISCORD] ${displayName}:</color> ${censoredContent}`;
+          latestMessage = `<color=#bfbfbf> v---> </color><color=${config.polytoriaColor}>${repliedDisplayName}:</color><color=#DEDEDE> ${repliedContent}</color> \n<color=${config.polytoriaColor}>${config.discordprefix} ${displayName}:</color> ${censoredContent}`;
         }
       } catch (error) {
         console.error('Error fetching replied message:', error);
       }
     }
-    
-    if (message.content != censoredContent) {
+
+    if (message.content !== censoredContent) {
       const embed = new MessageEmbed()
-      .setTitle('**Message Filtered!**')
-      .setDescription(
-        "Your message has been detected by our censor list.\n" +
-        "`"+ flagged +"`\n" +
-        "Don't worry, the message still got sent, but censored!"
-      )
-      .setFooter({ text: `Created By ${author} | Players online: ${PlayersOnline}` })
-      .setColor(config.mainColor); // Use config color
-    
-    message.channel.send({ embeds: [embed] });
+        .setTitle('**Message Filtered!**')
+        .setDescription(
+          "Your message has been detected by our censor list.\n" +
+          "`" + flagged.join(", ") + "`\n" +
+          "Don't worry, the message still got sent, but censored!"
+        )
+        .setFooter({ text: `Created By ${author} | Players online: ${PlayersOnline}` })
+        .setColor(config.mainColor); // Use config color
+
+      message.channel.send({ embeds: [embed] });
     }
+
     const channel = client.channels.cache.get(MODERATOR_CHANNEL_ID);
-    if (channel && message.content != censoredContent) {
+    if (channel && message.content !== censoredContent) {
       const embed = new MessageEmbed()
-      .setTitle('**Filter Violated!**')
-      .setDescription(
-        "Message sent by `"+ message.author.username + " / "+ displayName +"`\n" +
-        "`"+ message.content +"` Had flagged word(s) `"+ flagged +"`\n" +
-        "Filtered Message: `"+ censoredContent +"`"
-      )
-      .setFooter({ text: `Created By ${author} | Players online: ${PlayersOnline}` })
-      .setColor(config.mainColor); // Use config color
-      channel.send({ embeds: [embed] })
+        .setTitle('**Filter Violated!**')
+        .setDescription(
+          "Message sent by `" + message.author.username + " / " + displayName + "`\n" +
+          "`" + message.content + "` Had flagged word(s) `" + flagged.join(", ") + "`\n" +
+          "Filtered Message: `" + censoredContent + "`"
+        )
+        .setFooter({ text: `Created By ${author} | Players online: ${PlayersOnline}` })
+        .setColor(config.mainColor); // Use config color
+      channel.send({ embeds: [embed] });
     }
   }
 });
@@ -290,7 +307,7 @@ client.on('messageCreate', async message => {
 // Command handler for .list
 client.on('messageCreate', message => {
   
-  if (message.content === '.list' && message.channel.id === DISCORD_CHANNEL_ID) {
+  if (message.content === config.commandprefix + 'list' && message.channel.id === DISCORD_CHANNEL_ID) {
     let description = '';
     if (PlayersOnline > 0) {
       description = Object.keys(playerList).join('\n');
@@ -307,16 +324,16 @@ client.on('messageCreate', message => {
     message.channel.send({ embeds: [embed] });
   }
 
-  if (message.content === '.help' && message.channel.id === DISCORD_CHANNEL_ID) {
+  if (message.content === config.commandprefix + 'help' && message.channel.id === DISCORD_CHANNEL_ID) {
     const embed = new MessageEmbed()
       .setTitle(config.helpTitle)
       .setDescription(
-        "`.list` shows the players currently online\n" +
-        "`.help` displays this help message\n" +
-        "`.ban <user> <reason>` bans a user with a reason - Admin command\n" +
-        "`.unban <user>` unbans a user - Admin command\n" +
-        "`.config` displays current configuration settings - Admin command\n" +
-        "`.config <setting> <value>` changes a configuration setting - Admin command\n"
+        ""+ config.commandprefix +"list` shows the players currently online\n" +
+        ""+ config.commandprefix +"help` displays this help message\n" +
+        ""+ config.commandprefix +"ban <user> <reason>` bans a user with a reason - Admin command\n" +
+        ""+ config.commandprefix +"unban <user>` unbans a user - Admin command\n" +
+        ""+ config.commandprefix +"config` displays current configuration settings - Admin command\n" +
+        ""+ config.commandprefix +"config <setting> <value>` changes a configuration setting - Admin command\n"
       )
       .setFooter({ text: `Created By ${author} | Players online: ${PlayersOnline}` })
       .setColor(config.mainColor); // Use config color
@@ -324,8 +341,8 @@ client.on('messageCreate', message => {
     message.channel.send({ embeds: [embed] });
   }
   
-  if (message.content.startsWith('.ban') && message.channel.id === DISCORD_CHANNEL_ID) {
-    if (!message.member.roles.cache.has('1261731700766150698')) {
+  if (message.content.startsWith(config.commandprefix + 'ban') && message.channel.id === DISCORD_CHANNEL_ID) {
+    if (!message.member.roles.cache.has(ADMIN_ROLE_ID)) {
       return message.channel.send('You do not have permission to use this command.');
     }
 
@@ -356,8 +373,8 @@ client.on('messageCreate', message => {
     message.channel.send({ embeds: [embed] });
   }
   
-  if (message.content.startsWith('.unban') && message.channel.id === DISCORD_CHANNEL_ID) {
-    if (!message.member.roles.cache.has('1261731700766150698')) {
+  if (message.content.startsWith(config.commandprefix + 'unban') && message.channel.id === DISCORD_CHANNEL_ID) {
+    if (!message.member.roles.cache.has(ADMIN_ROLE_ID)) {
       return message.channel.send('You do not have permission to use this command.');
     }
 
@@ -392,15 +409,15 @@ client.on('messageCreate', message => {
     }
   }
 
-  if (message.content.startsWith('.config') && message.channel.id === DISCORD_CHANNEL_ID) {
-    if (!message.member.roles.cache.has('1261731700766150698')) {
+  if (message.content.startsWith(config.commandprefix + 'config') && message.channel.id === DISCORD_CHANNEL_ID) {
+    if (!message.member.roles.cache.has(ADMIN_ROLE_ID)) {
       return message.channel.send('You do not have permission to use this command.');
     }
 
     const args = message.content.split(' ');
     const setting = args[1];
     const value = args.slice(2).join(' ');
-
+    
     if (!setting || !value) {
       const configEmbed = new MessageEmbed()
         .setTitle('**Current Configuration**')
@@ -412,7 +429,9 @@ client.on('messageCreate', message => {
           "**discordcolor :** `"+ config.polytoriaColor +"`\n" +
           "**helptitle :** `"+ config.helpTitle +"`\n" +
           "**bantitle :** `"+ config.banTitle +"`\n" +
-          "**unbantitle :** `"+ config.unbanTitle +"`\n"
+          "**unbantitle :** `"+ config.unbanTitle +"`\n" +
+          "**discordprefix :** `"+ config.discordprefix +"`\n" +
+          "**commandprefix :** `"+ config.commandprefix +"`\n"
         )
         .setFooter({ text: `Created By ${author} | Players online: ${PlayersOnline}` })
         .setColor(config.mainColor); // Use config color
@@ -445,6 +464,12 @@ client.on('messageCreate', message => {
       case 'unbantitle':
         config.unbanTitle = value;
         break;
+      case 'discordprefix':
+        config.discordprefix = value;
+        break;
+      case 'commandprefix':
+        config.commandprefix = value;
+        break;
       default:
         return message.channel.send('Invalid setting. Use .config to view available settings.');
     }
@@ -455,7 +480,7 @@ client.on('messageCreate', message => {
       console.error('Error writing to config.json:', error);
     }
 
-    message.channel.send(`Configuration updated: ${setting} is now set to ${value}`);
+    message.channel.send("Configuration updated: `"+ setting +"` is now set to `"+ value+ "`");
   }
 });
 
@@ -561,3 +586,4 @@ client.login(process.env.TOKEN);
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
