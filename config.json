@@ -1,12 +1,14 @@
 {
   "mainColor": "#E33727",
-  "listTitle": "**Polycord Player List**",
+  "listTitle": "**Cool Game Player List**",
   "noPlayersDescription": "**No players online atm :cry:**",
   "listDescription": "${playerList}",
   "polytoriaColor": "#5964F0",
-  "helpTitle": "**Polycord Help**",
+  "helpTitle": "**Cool Game Help**",
   "banTitle": "**Successfully Banned User**",
   "unbanTitle": "**Successfully Unbanned User**",
   "chatChannelID": "",
-  "botChannelID": "<#1261730538906062848>"
+  "botChannelID": "<#1234567890987654321>",
+  "discordprefix": "[DISCORD]",
+  "commandprefix": "."
 }
